@@ -5,15 +5,26 @@ const pool = require('../db');
 // GET /api/orders - list orders with customer + item summary
 router.get('/', async (req, res, next) => {
   try {
-    const [rows] = await pool.query(`
-      SELECT o.order_id, o.status, o.total_amount, o.created_at,
-             c.name AS customer, COUNT(oi.order_item_id) AS item_count
+    let query = `
+      SELECT o.order_id, o.status, o.total_amount, o.created_at, o.payment_status,
+             u.name AS customer, COUNT(oi.order_item_id) AS item_count
       FROM orders o
-      JOIN customers c ON c.customer_id = o.customer_id
+      JOIN users u ON u.user_id = o.user_id
       LEFT JOIN order_items oi ON oi.order_id = o.order_id
-      GROUP BY o.order_id, o.status, o.total_amount, o.created_at, c.name
+    `;
+    const params = [];
+    if (req.user.role === 'customer') {
+        query += ` WHERE o.user_id = ? `;
+        params.push(req.user.userId);
+    } else if (req.user.role === 'seller') {
+        query += ` WHERE o.seller_id = ? `;
+        params.push(req.user.userId);
+    }
+    query += `
+      GROUP BY o.order_id, o.status, o.total_amount, o.created_at, o.payment_status, u.name
       ORDER BY o.created_at DESC
-    `);
+    `;
+    const [rows] = await pool.query(query, params);
     res.json(rows);
   } catch (err) { next(err); }
 });
@@ -22,12 +33,14 @@ router.get('/', async (req, res, next) => {
 router.get('/:id', async (req, res, next) => {
   try {
     const [[order]] = await pool.query(
-      `SELECT o.*, c.name AS customer, c.email
-       FROM orders o JOIN customers c ON c.customer_id = o.customer_id
+      `SELECT o.*, u.name AS customer, u.email
+       FROM orders o JOIN users u ON u.user_id = o.user_id
        WHERE o.order_id = ?`,
       [req.params.id]
     );
     if (!order) return res.status(404).json({ error: 'Order not found' });
+    if (req.user.role === 'customer' && order.user_id !== req.user.userId) return res.status(403).json({error: 'Forbidden'});
+    if (req.user.role === 'seller' && order.seller_id !== req.user.userId) return res.status(403).json({error: 'Forbidden'});
 
     const [items] = await pool.query(
       `SELECT oi.*, p.name AS product, w.name AS warehouse
@@ -52,63 +65,80 @@ router.get('/:id', async (req, res, next) => {
 // lines and mark the order cancelled, rather than leaving a
 // half-fulfilled order behind.
 router.post('/', async (req, res, next) => {
-  const { customer_id, delivery_lat, delivery_lng, items } = req.body;
-
-  if (!customer_id || !Array.isArray(items) || items.length === 0) {
-    return res.status(400).json({ error: 'customer_id and a non-empty items array are required' });
-  }
+  const { delivery_lat, delivery_lng, address_id, payment_method } = req.body;
+  const user_id = req.user.userId;
 
   const conn = await pool.getConnection();
-  const reservedSoFar = []; // for compensating rollback
+  const reservedSoFar = []; 
 
   try {
-    const [orderResult] = await conn.query(
-      `INSERT INTO orders (customer_id, status, total_amount) VALUES (?, 'pending', 0)`,
-      [customer_id]
+    const [cartItems] = await conn.query(`
+      SELECT c.product_id, c.quantity, p.seller_id 
+      FROM cart_items c
+      JOIN products p ON p.product_id = c.product_id
+      WHERE c.user_id = ?`, 
+      [user_id]
     );
-    const orderId = orderResult.insertId;
-
-    for (const item of items) {
-      try {
-        await conn.query(
-          `CALL fulfil_order_item(?, ?, ?, ?, ?)`,
-          [orderId, item.product_id, item.quantity, delivery_lat || 20.5937, delivery_lng || 78.9629]
-        );
-        reservedSoFar.push(item);
-      } catch (procErr) {
-        // Compensate: release everything reserved for this order so far
-        for (const done of reservedSoFar) {
-          await conn.query(
-            `UPDATE inventory i
-             JOIN order_items oi ON oi.product_id = i.product_id AND oi.warehouse_id = i.warehouse_id
-             SET i.reserved = i.reserved - oi.quantity
-             WHERE oi.order_id = ? AND oi.product_id = ?`,
-            [orderId, done.product_id]
-          );
-        }
-        await conn.query(`DELETE FROM order_items WHERE order_id = ?`, [orderId]);
-        await conn.query(`UPDATE orders SET status = 'cancelled' WHERE order_id = ?`, [orderId]);
-
-        return res.status(409).json({
-          error: `Could not fulfil product ${item.product_id}: insufficient stock across all warehouses`,
-          order_id: orderId,
-          status: 'cancelled',
-        });
-      }
+    if (cartItems.length === 0) {
+      return res.status(400).json({ error: 'Cart is empty' });
     }
 
-    const [[{ total }]] = await conn.query(
-      `SELECT SUM(quantity * unit_price) AS total FROM order_items WHERE order_id = ?`,
-      [orderId]
-    );
+    const itemsBySeller = {};
+    for (const item of cartItems) {
+      if (!itemsBySeller[item.seller_id]) itemsBySeller[item.seller_id] = [];
+      itemsBySeller[item.seller_id].push(item);
+    }
 
-    await conn.query(
-      `UPDATE orders SET status = 'confirmed', total_amount = ? WHERE order_id = ?`,
-      [total || 0, orderId]
-    );
+    const createdOrders = [];
 
-    res.status(201).json({ order_id: orderId, status: 'confirmed', total_amount: total || 0 });
+    for (const [sellerIdStr, items] of Object.entries(itemsBySeller)) {
+      const sellerId = parseInt(sellerIdStr);
+      const [orderResult] = await conn.query(
+        `INSERT INTO orders (user_id, seller_id, status, total_amount, address_id, payment_method, payment_status) VALUES (?, ?, 'pending', 0, ?, ?, 'pending')`,
+        [user_id, sellerId, address_id || null, payment_method || 'cod']
+      );
+      const orderId = orderResult.insertId;
+
+      for (const item of items) {
+        try {
+          await conn.query(
+            `CALL fulfil_order_item(?, ?, ?, ?, ?)`,
+            [orderId, item.product_id, item.quantity, delivery_lat || 20.5937, delivery_lng || 78.9629]
+          );
+          reservedSoFar.push(item);
+        } catch (procErr) {
+          throw new Error(`Could not fulfil product ${item.product_id}: insufficient stock across all warehouses`);
+        }
+      }
+
+      const [[{ total }]] = await conn.query(
+        `SELECT SUM(quantity * unit_price) AS total FROM order_items WHERE order_id = ?`,
+        [orderId]
+      );
+
+      await conn.query(
+        `UPDATE orders SET status = 'confirmed', total_amount = ? WHERE order_id = ?`,
+        [total || 0, orderId]
+      );
+
+      // Create mock payment record
+      await conn.query(
+        `INSERT INTO payments (order_id, amount, payment_method, status, transaction_id) VALUES (?, ?, ?, ?, ?)`,
+        [orderId, total || 0, payment_method || 'cod', payment_method === 'card' ? 'success' : 'pending', payment_method === 'card' ? 'txn_mock_' + Date.now() : null]
+      );
+      
+      if (payment_method === 'card') {
+          await conn.query(`UPDATE orders SET payment_status = 'paid' WHERE order_id = ?`, [orderId]);
+      }
+
+      createdOrders.push(orderId);
+    }
+
+    await conn.query(`DELETE FROM cart_items WHERE user_id = ?`, [user_id]);
+
+    res.status(201).json({ orders: createdOrders, status: 'confirmed' });
   } catch (err) {
+    await conn.rollback();
     next(err);
   } finally {
     conn.release();
@@ -124,9 +154,18 @@ router.post('/:id/ship', async (req, res, next) => {
     await conn.beginTransaction();
 
     const [items] = await conn.query(
-      `SELECT product_id, warehouse_id, quantity FROM order_items WHERE order_id = ?`,
+      `SELECT oi.product_id, oi.warehouse_id, oi.quantity, o.seller_id 
+       FROM order_items oi
+       JOIN orders o ON o.order_id = oi.order_id
+       WHERE oi.order_id = ?`,
       [req.params.id]
     );
+    
+    if (items.length > 0 && req.user.role === 'seller' && items[0].seller_id !== req.user.userId) {
+        await conn.rollback();
+        conn.release();
+        return res.status(403).json({ error: 'Forbidden' });
+    }
 
     for (const item of items) {
       await conn.query(

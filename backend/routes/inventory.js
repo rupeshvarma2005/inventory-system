@@ -5,14 +5,21 @@ const pool = require('../db');
 // GET /api/inventory - full stock grid (product x warehouse)
 router.get('/', async (req, res, next) => {
   try {
-    const [rows] = await pool.query(`
+    let query = `
       SELECT p.product_id, p.name AS product, w.warehouse_id, w.name AS warehouse,
              i.quantity, i.reserved, (i.quantity - i.reserved) AS available
       FROM inventory i
       JOIN products p ON p.product_id = i.product_id
       JOIN warehouses w ON w.warehouse_id = i.warehouse_id
-      ORDER BY p.name, w.name
-    `);
+    `;
+    const params = [];
+    if (req.user && req.user.role === 'seller') {
+        query += ` WHERE p.seller_id = ? `;
+        params.push(req.user.userId);
+    }
+    query += ` ORDER BY p.name, w.name `;
+    
+    const [rows] = await pool.query(query, params);
     res.json(rows);
   } catch (err) { next(err); }
 });
@@ -20,15 +27,22 @@ router.get('/', async (req, res, next) => {
 // GET /api/inventory/alerts - open reorder alerts
 router.get('/alerts', async (req, res, next) => {
   try {
-    const [rows] = await pool.query(`
+    let query = `
       SELECT ra.alert_id, p.name AS product, w.name AS warehouse,
              ra.quantity_at_alert, ra.created_at
       FROM reorder_alerts ra
       JOIN products p ON p.product_id = ra.product_id
       JOIN warehouses w ON w.warehouse_id = ra.warehouse_id
       WHERE ra.resolved = FALSE
-      ORDER BY ra.created_at DESC
-    `);
+    `;
+    const params = [];
+    if (req.user && req.user.role === 'seller') {
+        query += ` AND p.seller_id = ? `;
+        params.push(req.user.userId);
+    }
+    query += ` ORDER BY ra.created_at DESC `;
+    
+    const [rows] = await pool.query(query, params);
     res.json(rows);
   } catch (err) { next(err); }
 });
@@ -45,6 +59,14 @@ router.post('/adjust', async (req, res, next) => {
 
   const conn = await pool.getConnection();
   try {
+    if (req.user && req.user.role === 'seller') {
+      const [[prod]] = await conn.query('SELECT seller_id FROM products WHERE product_id = ?', [product_id]);
+      if (!prod || prod.seller_id !== req.user.userId) {
+        conn.release();
+        return res.status(403).json({ error: 'You do not own this product' });
+      }
+    }
+
     await conn.beginTransaction();
 
     const [[row]] = await conn.query(

@@ -8,10 +8,18 @@ const warehousesRouter = require('./routes/warehouses');
 const inventoryRouter = require('./routes/inventory');
 const ordersRouter = require('./routes/orders');
 const analyticsRouter = require('./routes/analytics');
+const authRouter = require('./routes/auth');
+const suppliersRouter = require('./routes/suppliers');
+const purchasesRouter = require('./routes/purchases');
+const userRouter = require('./routes/user');
+const { authenticateToken } = require('./middleware/authMiddleware');
 
 const app = express();
 
-const allowedOrigins = (process.env.CORS_ORIGIN || '*').split(',').map(s => s.trim());
+let allowedOrigins = process.env.CORS_ORIGIN || '*';
+if (allowedOrigins !== '*') {
+  allowedOrigins = allowedOrigins.split(',').map(s => s.trim());
+}
 app.use(cors({ origin: allowedOrigins }));
 app.use(express.json());
 
@@ -31,11 +39,20 @@ app.get('/api/health', async (req, res) => {
   res.json(payload);
 });
 
-app.use('/api/products', productsRouter);
-app.use('/api/warehouses', warehousesRouter);
-app.use('/api/inventory', inventoryRouter);
-app.use('/api/orders', ordersRouter);
-app.use('/api/analytics', analyticsRouter);
+app.use('/api/auth', authRouter);
+
+const cartRouter = require('./routes/cart');
+
+// Protected routes
+app.use('/api/products', authenticateToken, productsRouter);
+app.use('/api/warehouses', authenticateToken, warehousesRouter);
+app.use('/api/inventory', authenticateToken, inventoryRouter);
+app.use('/api/orders', authenticateToken, ordersRouter);
+app.use('/api/analytics', authenticateToken, analyticsRouter);
+app.use('/api/suppliers', authenticateToken, suppliersRouter);
+app.use('/api/purchases', authenticateToken, purchasesRouter);
+app.use('/api/cart', authenticateToken, cartRouter);
+app.use('/api/user', authenticateToken, userRouter);
 
 // Centralized error handler
 app.use((err, req, res, next) => {
@@ -69,3 +86,5 @@ app.listen(PORT, async () => {
   console.log(`API running on port ${PORT}`);
   await verifyDatabase();
 });
+
+// nodemon restart trigger 2
