@@ -5,7 +5,9 @@ export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
-    const [token, setToken] = useState(localStorage.getItem('token') || null);
+    const [token, setToken] = useState(
+        localStorage.getItem('token') || sessionStorage.getItem('token') || null
+    );
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -25,14 +27,29 @@ export const AuthProvider = ({ children }) => {
         setLoading(false);
     }, [token]);
 
-    const login = (newToken) => {
-        localStorage.setItem('token', newToken);
+    const login = (newToken, userData = null, remember = true) => {
+        if (remember) {
+            localStorage.setItem('token', newToken);
+            sessionStorage.removeItem('token');
+        } else {
+            sessionStorage.setItem('token', newToken);
+            localStorage.removeItem('token');
+        }
         setToken(newToken);
-        setUser(jwtDecode(newToken));
+        if (userData) {
+            setUser(userData);
+        } else {
+            try {
+                setUser(jwtDecode(newToken));
+            } catch (e) {
+                console.error('Invalid token payload:', e);
+            }
+        }
     };
 
     const logout = () => {
         localStorage.removeItem('token');
+        sessionStorage.removeItem('token');
         setToken(null);
         setUser(null);
     };

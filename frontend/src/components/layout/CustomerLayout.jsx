@@ -3,6 +3,11 @@ import { useContext, useState, useEffect } from 'react';
 import { AuthContext } from '../../context/AuthContext.jsx';
 import { ThemeContext } from '../../context/ThemeContext.jsx';
 import { api } from '../../api.js';
+import { 
+    Search, ShoppingBag, Sun, Moon, Sparkles, Cpu, Home, Shirt, 
+    Activity, Tag, ShieldCheck, Truck, RotateCcw, X, Layers,
+    ChevronRight, Store, SlidersHorizontal, LogOut, User as UserIcon
+} from 'lucide-react';
 
 export default function CustomerLayout({ children }) {
     const { user, logout } = useContext(AuthContext);
@@ -29,9 +34,9 @@ export default function CustomerLayout({ children }) {
     const handleSearch = (e) => {
         e.preventDefault();
         if (searchQuery.trim()) {
-            navigate(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
+            navigate(`/storefront?search=${encodeURIComponent(searchQuery.trim())}`);
         } else {
-            navigate('/products');
+            navigate('/storefront');
         }
     };
 
@@ -44,47 +49,75 @@ export default function CustomerLayout({ children }) {
     };
 
     const categories = [
-        { name: 'All Products', path: '/products', icon: '✦' },
-        { name: 'Electronics', path: '/products?category=Electronics', icon: '⚡' },
-        { name: 'Home & Kitchen', path: '/products?category=Home %26 Kitchen', icon: '🏡' },
-        { name: 'Apparel', path: '/products?category=Apparel', icon: '👔' },
-        { name: 'Sports & Fitness', path: '/products?category=Sports %26 Fitness', icon: '🏃' },
-        { name: 'Special Offers', path: '/products?deals=true', icon: '🏷️' },
+        { name: 'All Collections', path: '/storefront', icon: Sparkles },
+        { name: 'Electronics', path: '/storefront?category=Electronics', icon: Cpu },
+        { name: 'Home & Living', path: '/storefront?category=Home %26 Kitchen', icon: Home },
+        { name: 'Apparel', path: '/storefront?category=Apparel', icon: Shirt },
+        { name: 'Fitness & Sports', path: '/storefront?category=Sports %26 Fitness', icon: Activity },
+        { name: 'Special Offers', path: '/storefront?deals=true', icon: Tag },
     ];
 
     return (
         <div className="customer-layout">
+            {/* Top IMS Simulation Bar */}
+            <div style={{
+                background: 'linear-gradient(90deg, #1E293B, #0F172A)',
+                color: '#F8FAFC',
+                padding: '8px 1.5rem',
+                fontSize: '0.82rem',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                borderBottom: '1px solid rgba(255,255,255,0.1)',
+                position: 'sticky',
+                top: 0,
+                zIndex: 999
+            }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ background: 'var(--primary)', color: '#fff', fontSize: '0.68rem', fontWeight: 700, padding: '2px 8px', borderRadius: '4px', textTransform: 'uppercase' }}>
+                        Storefront Demo
+                    </span>
+                    <span style={{ color: '#CBD5E1' }}>
+                        Orders placed here trigger real-time stock deduction across warehouse hubs in the IMS.
+                    </span>
+                </div>
+                <Link 
+                    to="/" 
+                    style={{ color: '#60A5FA', textDecoration: 'none', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.82rem' }}
+                >
+                    ← Back to NexStock Inventory Console
+                </Link>
+            </div>
+
             {/* Top Announcement Bar */}
             <div className="announcement-bar">
-                <span className="announcement-badge">LIMITED TIME</span>
-                <span>✨ Free Express Delivery on orders over ₹500 &bull; Use code <strong>LUXE10</strong> for 10% off today &bull; 100% Genuine Certified</span>
+                <span className="announcement-badge">Complimentary Dispatch</span>
+                <span>Free express delivery on all orders over ₹500 &bull; Use code <strong>LUXE10</strong> for 10% savings</span>
+                <Link to="/storefront?deals=true" style={{ display: 'inline-flex', alignItems: 'center', gap: '2px', color: 'var(--primary)', textDecoration: 'none', marginLeft: '6px' }}>
+                    Shop Deals <ChevronRight size={13} />
+                </Link>
             </div>
 
             {/* Main Header */}
             <header className="top-nav">
                 <div className="nav-container">
                     {/* Brand */}
-                    <Link to="/" className="nav-brand">
+                    <Link to="/storefront" className="nav-brand" aria-label="NexStock Home">
                         <div className="nav-brand-icon">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-                            </svg>
+                            <Layers size={18} strokeWidth={2.4} />
                         </div>
-                        <span>Market<span className="highlight">Hub</span></span>
+                        <span>Nex<span className="highlight">Stock</span></span>
                     </Link>
                     
-                    {/* Search Bar */}
+                    {/* Search Bar (Spotlight Style) */}
                     <div className="nav-search">
                         <form onSubmit={handleSearch}>
                             <span className="nav-search-icon">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <circle cx="11" cy="11" r="8"></circle>
-                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                                </svg>
+                                <Search size={16} strokeWidth={2.2} />
                             </span>
                             <input 
                                 type="text" 
-                                placeholder="Search premium tech, home decor, apparel..." 
+                                placeholder="Search products, technology, home goods..." 
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
@@ -92,10 +125,10 @@ export default function CustomerLayout({ children }) {
                                 <button 
                                     type="button" 
                                     onClick={() => setSearchQuery('')}
-                                    style={{ background: 'transparent', color: 'var(--text-dim)', border: 'none', padding: '0 8px', cursor: 'pointer', fontSize: '1rem' }}
-                                    title="Clear"
+                                    style={{ background: 'transparent', color: 'var(--text-dim)', border: 'none', padding: '0 6px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                                    title="Clear search"
                                 >
-                                    ✕
+                                    <X size={14} />
                                 </button>
                             )}
                             <button type="submit">
@@ -104,102 +137,85 @@ export default function CustomerLayout({ children }) {
                         </form>
                     </div>
                     
-                    {/* Actions */}
+                    {/* Navigation Actions */}
                     <div className="nav-actions">
                         {user ? (
                             <>
                                 <Link to="/orders" className="nav-link-btn" title="View Order History">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
-                                        <line x1="3" y1="6" x2="21" y2="6"></line>
-                                        <path d="M16 10a4 4 0 0 1-8 0"></path>
-                                    </svg>
+                                    <ShoppingBag size={16} strokeWidth={2} />
                                     <span>Orders</span>
                                 </Link>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>
-                                        {user.name.split(' ')[0]}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--surface-raised)', padding: '4px 10px', borderRadius: '9999px', border: '1px solid var(--border-subtle)' }}>
+                                    <UserIcon size={14} style={{ color: 'var(--primary)' }} />
+                                    <span style={{ fontSize: '0.82rem', fontWeight: 500, color: 'var(--text)' }}>
+                                        {user.name ? user.name.split(' ')[0] : user.username}
                                     </span>
                                     <button 
-                                        className="btn secondary sm" 
                                         onClick={logout}
-                                        style={{ fontSize: '0.8rem', padding: '5px 10px' }}
+                                        style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-dim)', padding: '2px 4px', display: 'flex', alignItems: 'center' }}
+                                        title="Sign out"
                                     >
-                                        Logout
+                                        <LogOut size={13} />
                                     </button>
                                 </div>
                             </>
                         ) : (
                             <>
-                                <Link to="/login" className="nav-link-btn">Login</Link>
-                                <Link to="/register" className="btn sm">Sign Up</Link>
+                                <Link to="/login" className="nav-link-btn">Sign In</Link>
+                                <Link to="/register" className="btn sm">Get Started</Link>
                             </>
                         )}
                         
-                        {/* Cart */}
-                        <Link to="/cart" className="cart-icon-wrapper" aria-label="Shopping Cart">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <circle cx="9" cy="21" r="1"></circle>
-                                <circle cx="20" cy="21" r="1"></circle>
-                                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-                            </svg>
-                            <span>Cart</span>
+                        {/* Cart Trigger */}
+                        <Link to="/cart" className="cart-icon-wrapper" aria-label="Shopping Bag">
+                            <ShoppingBag size={17} strokeWidth={2} />
+                            <span>Bag</span>
                             {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
                         </Link>
 
-                        {/* Admin / Seller shortcuts */}
-                        {(import.meta.env.VITE_AUTH_BYPASS === 'true' || (user && ['seller', 'admin'].includes(user.role))) && (
-                            <div style={{ display: 'flex', gap: '6px' }}>
-                                <Link to="/seller/dashboard" className="btn secondary sm" title="Seller Operations">
-                                    📦 Seller
+                        {/* Workspace Switcher (only for authenticated Admins & Sellers) */}
+                        {user && ['seller', 'admin'].includes(user.role) && (
+                            <div style={{ display: 'flex', gap: '4px', background: 'var(--surface-raised)', padding: '3px', borderRadius: '9999px', border: '1px solid var(--border-subtle)' }}>
+                                <Link to="/seller/dashboard" className="nav-link-btn" style={{ padding: '4px 8px', fontSize: '0.75rem' }} title="Seller Workspace">
+                                    <Store size={13} /> Seller
                                 </Link>
-                                <Link to="/admin/dashboard" className="btn secondary sm" title="Admin Oversight">
-                                    🛡️ Admin
-                                </Link>
+                                {user.role === 'admin' && (
+                                    <Link to="/admin/dashboard" className="nav-link-btn" style={{ padding: '4px 8px', fontSize: '0.75rem' }} title="Admin Console">
+                                        <SlidersHorizontal size={13} /> Admin
+                                    </Link>
+                                )}
                             </div>
                         )}
 
-                        {/* Theme Toggle */}
+                        {/* Theme Toggle (Cupertino Sun/Moon) */}
                         <button 
                             className="theme-toggle-btn" 
                             onClick={toggleTheme} 
                             title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
                             aria-label="Toggle visual theme"
                         >
-                            {theme === 'dark' ? (
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <circle cx="12" cy="12" r="5"></circle>
-                                    <line x1="12" y1="1" x2="12" y2="3"></line>
-                                    <line x1="12" y1="21" x2="12" y2="23"></line>
-                                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                                    <line x1="1" y1="12" x2="3" y2="12"></line>
-                                    <line x1="21" y1="12" x2="23" y2="12"></line>
-                                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                                </svg>
-                            ) : (
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                                </svg>
-                            )}
+                            {theme === 'dark' ? <Sun size={16} strokeWidth={2} /> : <Moon size={16} strokeWidth={2} />}
                         </button>
                     </div>
                 </div>
 
-                {/* Category Navigation Strip */}
+                {/* Apple Segmented Category Navigation Strip */}
                 <div className="category-subnav">
                     <div className="category-subnav-container">
-                        {categories.map((c, i) => (
-                            <Link 
-                                key={i} 
-                                to={c.path} 
-                                className={`category-subnav-link ${location.pathname + location.search === c.path ? 'active' : ''}`}
-                            >
-                                <span>{c.icon}</span>
-                                <span>{c.name}</span>
-                            </Link>
-                        ))}
+                        {categories.map((c, i) => {
+                            const IconComponent = c.icon;
+                            const isActive = location.pathname + location.search === c.path;
+                            return (
+                                <Link 
+                                    key={i} 
+                                    to={c.path} 
+                                    className={`category-subnav-link ${isActive ? 'active' : ''}`}
+                                >
+                                    <IconComponent size={14} strokeWidth={2} />
+                                    <span>{c.name}</span>
+                                </Link>
+                            );
+                        })}
                     </div>
                 </div>
             </header>
@@ -209,30 +225,29 @@ export default function CustomerLayout({ children }) {
                 {children}
             </main>
 
-            {/* Luxury Footer */}
+            {/* Apple Clean Minimalist Footer */}
             <footer className="footer">
                 <div className="footer-container">
                     <div className="footer-brand">
-                        <div className="nav-brand" style={{ marginBottom: '8px' }}>
+                        <div className="nav-brand" style={{ marginBottom: '12px' }}>
                             <div className="nav-brand-icon">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-                                </svg>
+                                <Layers size={18} strokeWidth={2.4} />
                             </div>
-                            <span>Market<span className="highlight">Hub</span></span>
+                            <span>Nex<span className="highlight">Stock</span></span>
                         </div>
-                        <p>
-                            Curated multi-vendor commerce platform engineered for supreme reliability, verified merchant authenticity, and instantaneous delivery.
+                        <p style={{ lineHeight: '1.6', fontSize: '0.88rem', color: 'var(--text-muted)' }}>
+                            Engineered for precision living. Curated flagship electronics, artisan lifestyle goods, and performance apparel dispatched from regional hubs.
                         </p>
                     </div>
 
                     <div className="footer-col">
-                        <h4>Explore Categories</h4>
+                        <h4>Explore Catalog</h4>
                         <ul className="footer-links">
                             <li><Link to="/products?category=Electronics">Electronics &amp; Gadgets</Link></li>
                             <li><Link to="/products?category=Home %26 Kitchen">Home &amp; Kitchen</Link></li>
                             <li><Link to="/products?category=Apparel">Apparel &amp; Fashion</Link></li>
                             <li><Link to="/products?category=Sports %26 Fitness">Fitness &amp; Outdoors</Link></li>
+                            <li><Link to="/products?deals=true">Special Offers</Link></li>
                         </ul>
                     </div>
 
@@ -242,18 +257,18 @@ export default function CustomerLayout({ children }) {
                             <li><Link to="/orders">Order Tracking</Link></li>
                             <li><Link to="/cart">Shopping Bag</Link></li>
                             <li><Link to="/login">Account Access</Link></li>
-                            <li><a href="#privacy">Privacy &amp; Terms</a></li>
+                            <li><Link to="/seller/register" style={{ color: 'var(--accent, #f59e0b)', fontWeight: 600 }}>Sell on NexStock &rarr;</Link></li>
                         </ul>
                     </div>
 
                     <div className="footer-col">
-                        <h4>Privilege Newsletter</h4>
-                        <p style={{ fontSize: '0.85rem', color: 'var(--text-dim)', marginBottom: '12px' }}>
-                            Receive private drops, insider sale previews, and exclusive editorial curations.
+                        <h4>NexStock Insider</h4>
+                        <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '12px', lineHeight: '1.5' }}>
+                            Subscribe to receive curated product drops and exclusive private sale previews.
                         </p>
                         {subscribed ? (
-                            <div style={{ color: 'var(--good)', fontWeight: 600, fontSize: '0.9rem' }}>
-                                ✓ Welcome to MarketHub Private Circle!
+                            <div style={{ color: 'var(--good)', fontWeight: 600, fontSize: '0.88rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <ShieldCheck size={16} /> Subscribed to NexStock Insider.
                             </div>
                         ) : (
                             <form onSubmit={handleNewsletter} style={{ display: 'flex', gap: '8px' }}>
@@ -263,7 +278,7 @@ export default function CustomerLayout({ children }) {
                                     value={newsletterEmail}
                                     onChange={(e) => setNewsletterEmail(e.target.value)}
                                     required 
-                                    style={{ flex: 1, padding: '8px 12px', fontSize: '0.85rem' }}
+                                    style={{ flex: 1, padding: '7px 12px', fontSize: '0.85rem' }}
                                 />
                                 <button type="submit" className="btn sm">Join</button>
                             </form>
@@ -272,11 +287,17 @@ export default function CustomerLayout({ children }) {
                 </div>
 
                 <div className="footer-bottom">
-                    <span>&copy; {new Date().getFullYear()} MarketHub Technologies, Inc. All rights reserved.</span>
-                    <div style={{ display: 'flex', gap: '1.5rem' }}>
-                        <span>🔒 256-Bit SSL Encryption</span>
-                        <span>⚡ Guaranteed Authenticity</span>
-                        <span>📦 Nationwide Multi-Hub Dispatch</span>
+                    <span>&copy; {new Date().getFullYear()} NexStock Technologies, Inc. All rights reserved.</span>
+                    <div style={{ display: 'flex', gap: '1.75rem', alignItems: 'center' }}>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                            <ShieldCheck size={14} style={{ color: 'var(--primary)' }} /> 256-Bit SSL Encryption
+                        </span>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                            <Truck size={14} style={{ color: 'var(--primary)' }} /> 4-Hub Regional Routing
+                        </span>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                            <RotateCcw size={14} style={{ color: 'var(--primary)' }} /> 7-Day Guaranteed Returns
+                        </span>
                     </div>
                 </div>
             </footer>

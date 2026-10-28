@@ -1,0 +1,17 @@
+{
+  "name": "inventory-system",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Multi-Vendor Inventory Management and E-Commerce System",
+  "scripts": {
+    "dev": "concurrently -n \"BACKEND,FRONTEND\" -c \"cyan,magenta\" \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "start": "concurrently -n \"BACKEND,FRONTEND\" -c \"cyan,magenta\" \"npm run start:backend\" \"npm run dev:frontend\"",
+    "start:backend": "npm --prefix backend start",
+    "setup:db": "node backend/scripts/migrate_v2_ims.js"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.6"
+  }
+}

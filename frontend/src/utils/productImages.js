@@ -8,7 +8,7 @@ const CURATED_IMAGE_MAP = {
   // Direct SKU & Keyword matches
   'ELEC-001': 'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?auto=format&fit=crop&w=800&q=80',
   'ELEC-002': 'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&w=800&q=80',
-  'HOME-001': 'https://images.unsplash.com/photo-1584990347449-399a9b2bdf9e?auto=format&fit=crop&w=800&q=80',
+  'HOME-001': '/frying-pan.jpg',
   'HOME-002': 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=800&q=80',
   'APP-001': 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=800&q=80',
   'SPRT-001': 'https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?auto=format&fit=crop&w=800&q=80',
@@ -22,7 +22,7 @@ const CURATED_IMAGE_MAP = {
 };
 
 // Generic elegant SVG data-URI placeholder as ultimate safety net
-export const FALLBACK_SVG = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400"><rect width="400" height="400" fill="%23131b2e"/><circle cx="200" cy="180" r="60" fill="%231e293b"/><path d="M150 280 L200 230 L250 280" stroke="%2338bdf8" stroke-width="8" stroke-linecap="round" fill="none"/><text x="200" y="320" text-anchor="middle" fill="%2394a3b8" font-family="sans-serif" font-size="16" font-weight="600">MarketHub Exclusive</text></svg>';
+export const FALLBACK_SVG = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400"><rect width="400" height="400" fill="%23131b2e"/><circle cx="200" cy="180" r="60" fill="%231e293b"/><path d="M150 280 L200 230 L250 280" stroke="%2338bdf8" stroke-width="8" stroke-linecap="round" fill="none"/><text x="200" y="320" text-anchor="middle" fill="%2394a3b8" font-family="sans-serif" font-size="16" font-weight="600">NexStock Exclusive</text></svg>';
 
 export function getProductImage(product) {
   if (product?.primary_image && product.primary_image.trim() !== '') {

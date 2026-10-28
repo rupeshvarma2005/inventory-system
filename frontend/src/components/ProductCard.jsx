@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Heart, Star, Plus, Check } from 'lucide-react';
 import { getProductImage, handleImageError } from '../utils/productImages.js';
 
 export default function ProductCard({ product, onAddToCart }) {
@@ -56,7 +57,7 @@ export default function ProductCard({ product, onAddToCart }) {
         <div className="product-card-badges">
           {discount > 0 && (
             <span className="discount-pill">
-              -{Math.round(discount)}% OFF
+              -{Math.round(discount)}%
             </span>
           )}
           {product.category && (
@@ -74,7 +75,7 @@ export default function ProductCard({ product, onAddToCart }) {
           title={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
           aria-label="Wishlist toggle"
         >
-          {isWishlisted ? '♥' : '♡'}
+          <Heart size={15} fill={isWishlisted ? "currentColor" : "none"} strokeWidth={isWishlisted ? 0 : 2} />
         </button>
       </Link>
 
@@ -85,23 +86,30 @@ export default function ProductCard({ product, onAddToCart }) {
           {product.name}
         </Link>
 
-        {/* Rating Row (Only show if supported by actual data) */}
+        {/* Rating Row */}
         <div className="product-rating-row">
           {rating > 0 ? (
             <>
-              <div className="rating-stars">
-                {'★'.repeat(Math.round(rating))}
-                {'☆'.repeat(5 - Math.round(rating))}
+              <div className="rating-stars" style={{ display: 'flex', gap: '2px' }}>
+                {[1, 2, 3, 4, 5].map((starIdx) => (
+                  <Star 
+                    key={starIdx} 
+                    size={13} 
+                    fill={starIdx <= Math.round(rating) ? "#FF9F0A" : "none"} 
+                    color={starIdx <= Math.round(rating) ? "#FF9F0A" : "var(--border)"}
+                    strokeWidth={1.5}
+                  />
+                ))}
               </div>
               <span className="rating-score">{rating.toFixed(1)}</span>
               <span className="rating-count">({reviewCount})</span>
             </>
           ) : (
-            <span className="rating-count">No reviews yet</span>
+            <span className="rating-count">New Arrival</span>
           )}
         </div>
 
-        {/* Stock Status Badge */}
+        {/* Stock Status Badge with Apple micro-dot */}
         <div className={`stock-status-pill ${isOutOfStock ? 'out-stock' : stock <= 10 ? 'low-stock' : 'in-stock'}`}>
           <span className="stock-dot"></span>
           <span>
@@ -113,7 +121,7 @@ export default function ProductCard({ product, onAddToCart }) {
         <div className="product-price-row">
           <div className="price-box">
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-              <span className={`product-price ${discount > 0 ? 'discounted' : ''}`}>
+              <span className="product-price">
                 ₹{finalPrice.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
               {discount > 0 && (
@@ -134,20 +142,16 @@ export default function ProductCard({ product, onAddToCart }) {
             className={`product-add-btn ${justAdded ? 'added' : ''}`}
             onClick={handleAdd}
             disabled={isOutOfStock || isAdding}
+            aria-label="Add to bag"
           >
             {justAdded ? (
-              <><span>✓</span><span>Added</span></>
+              <><Check size={14} strokeWidth={2.5} /><span>Added</span></>
             ) : isAdding ? (
               <span>...</span>
             ) : isOutOfStock ? (
-              <span>Sold Out</span>
+              <span>Sold</span>
             ) : (
-              <>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 5v14M5 12h14"></path>
-                </svg>
-                <span>Add</span>
-              </>
+              <><Plus size={14} strokeWidth={2.5} /><span>Add</span></>
             )}
           </button>
         </div>

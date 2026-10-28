@@ -3,9 +3,10 @@ import axios from 'axios';
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
 
 const client = axios.create({ baseURL: API_URL });
+client.client = client;
 
 client.interceptors.request.use(config => {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -18,6 +19,7 @@ client.interceptors.response.use(
     if (error.response?.status === 401 || error.response?.status === 403) {
       if (import.meta.env.VITE_AUTH_BYPASS !== 'true' && window.location.pathname !== '/login' && window.location.pathname !== '/register') {
         localStorage.removeItem('token');
+        sessionStorage.removeItem('token');
         window.location.href = '/login';
       }
     }
@@ -34,10 +36,16 @@ export const api = {
   getProducts: (params = {}) => client.get('/products', { params }).then(r => r.data),
   getProduct: (id) => client.get(`/products/${id}`).then(r => r.data),
   createProduct: (payload) => client.post('/products', payload).then(r => r.data),
+  updateProduct: (id, payload) => client.put(`/products/${id}`, payload).then(r => r.data),
+  deleteProduct: (id) => client.delete(`/products/${id}`).then(r => r.data),
+  updateStock: (id, payload) => client.put(`/products/${id}/stock`, payload).then(r => r.data),
+
   getWarehouses: () => client.get('/warehouses').then(r => r.data),
   getInventory: () => client.get('/inventory').then(r => r.data),
   getAlerts: () => client.get('/inventory/alerts').then(r => r.data),
   adjustStock: (payload) => client.post('/inventory/adjust', payload).then(r => r.data),
+  getTransactions: (params = {}) => client.get('/inventory/transactions', { params }).then(r => r.data),
+  recordTransaction: (payload) => client.post('/inventory/transaction', payload).then(r => r.data),
 
   getOrders: () => client.get('/orders').then(r => r.data),
   getOrder: (id) => client.get(`/orders/${id}`).then(r => r.data),

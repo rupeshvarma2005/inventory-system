@@ -3,6 +3,10 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { api, getApiError } from '../api.js';
 import ApiErrorBanner from '../components/ApiErrorBanner.jsx';
 import { getProductImage, handleImageError } from '../utils/productImages.js';
+import { 
+  ShieldCheck, Truck, Star, ArrowRight, Check, Plus, 
+  Minus, ShoppingBag, ChevronRight, AlertCircle, Warehouse
+} from 'lucide-react';
 
 export default function ProductDetails() {
   const { id } = useParams();
@@ -74,9 +78,11 @@ export default function ProductDetails() {
   if (error || !product) {
     return (
       <div className="empty-state" style={{ margin: '3rem auto', maxWidth: '600px' }}>
-        <div className="empty-state-icon">⚠️</div>
-        <h3>Product Not Found</h3>
-        <p>The requested product could not be loaded or has been archived.</p>
+        <div className="empty-state-icon" style={{ display: 'flex', justifyContent: 'center' }}>
+          <AlertCircle size={48} color="var(--danger)" />
+        </div>
+        <h3>Product Not Available</h3>
+        <p>The requested product catalog item could not be found or has been discontinued.</p>
         <Link to="/products" className="btn" style={{ marginTop: '1rem' }}>Return to Catalog</Link>
       </div>
     );
@@ -99,16 +105,16 @@ export default function ProductDetails() {
   return (
     <div style={{ maxWidth: '1300px', margin: '0 auto' }}>
       {/* Breadcrumb Navigation */}
-      <nav style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2rem', fontSize: '0.88rem', color: 'var(--text-dim)' }}>
+      <nav style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2rem', fontSize: '0.85rem', color: 'var(--text-dim)' }}>
         <Link to="/" style={{ color: 'var(--text-dim)' }}>Home</Link>
-        <span>/</span>
-        <Link to="/products" style={{ color: 'var(--text-dim)' }}>Products</Link>
-        <span>/</span>
+        <ChevronRight size={13} />
+        <Link to="/products" style={{ color: 'var(--text-dim)' }}>Catalog</Link>
+        <ChevronRight size={13} />
         <Link to={`/products?category=${encodeURIComponent(product.category || '')}`} style={{ color: 'var(--text-dim)' }}>
           {product.category || 'General'}
         </Link>
-        <span>/</span>
-        <span style={{ color: 'var(--text)', fontWeight: 600 }}>{product.name}</span>
+        <ChevronRight size={13} />
+        <span style={{ color: 'var(--text)', fontWeight: 500 }}>{product.name}</span>
       </nav>
 
       <ApiErrorBanner error={error} />
@@ -140,19 +146,19 @@ export default function ProductDetails() {
           )}
 
           {/* Value Badges */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '1rem' }}>
-            <div style={{ background: 'var(--surface-raised)', padding: '12px', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{ fontSize: '1.25rem' }}>🛡️</span>
-              <div style={{ fontSize: '0.8rem' }}>
-                <strong>100% Genuine</strong>
-                <p style={{ color: 'var(--text-dim)' }}>Verified supplier source</p>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '1.25rem' }}>
+            <div style={{ background: 'var(--surface-raised)', padding: '12px 14px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <ShieldCheck size={20} color="var(--primary)" />
+              <div style={{ fontSize: '0.82rem' }}>
+                <strong style={{ color: 'var(--text)' }}>100% Genuine</strong>
+                <p style={{ color: 'var(--text-dim)', margin: 0 }}>Verified supplier source</p>
               </div>
             </div>
-            <div style={{ background: 'var(--surface-raised)', padding: '12px', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{ fontSize: '1.25rem' }}>⚡</span>
-              <div style={{ fontSize: '0.8rem' }}>
-                <strong>Express Delivery</strong>
-                <p style={{ color: 'var(--text-dim)' }}>Dispatch from 4 regional hubs</p>
+            <div style={{ background: 'var(--surface-raised)', padding: '12px 14px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <Truck size={20} color="var(--primary)" />
+              <div style={{ fontSize: '0.82rem' }}>
+                <strong style={{ color: 'var(--text)' }}>Regional Dispatch</strong>
+                <p style={{ color: 'var(--text-dim)', margin: 0 }}>Dispatched from 4 local hubs</p>
               </div>
             </div>
           </div>
@@ -161,33 +167,40 @@ export default function ProductDetails() {
         {/* Details Information */}
         <div className="details-info">
           <div>
-            <span className="details-sku">SKU: {product.sku}</span>
-            <h1 className="details-title">{product.name}</h1>
-            <p style={{ fontSize: '0.9rem', color: 'var(--text-dim)', marginTop: '4px' }}>
-              Vendor: <strong style={{ color: 'var(--text)' }}>{product.seller_name || 'MarketHub Official'}</strong> &bull; Category: <span className="badge info">{product.category || 'General'}</span>
+            <span className="details-sku" style={{ letterSpacing: '0.04em' }}>SKU: {product.sku}</span>
+            <h1 className="details-title" style={{ letterSpacing: '-0.03em' }}>{product.name}</h1>
+            <p style={{ fontSize: '0.88rem', color: 'var(--text-dim)', marginTop: '4px' }}>
+              Vendor: <strong style={{ color: 'var(--text)' }}>{product.seller_name || 'NexStock Official'}</strong> &bull; Category: <span className="badge info">{product.category || 'General'}</span>
             </p>
           </div>
 
           {/* Rating */}
-          <div className="product-rating-row" style={{ fontSize: '0.95rem' }}>
+          <div className="product-rating-row" style={{ fontSize: '0.9rem' }}>
             {rating > 0 ? (
               <>
-                <div className="rating-stars" style={{ fontSize: '1.1rem' }}>
-                  {'★'.repeat(Math.round(rating))}
-                  {'☆'.repeat(5 - Math.round(rating))}
+                <div className="rating-stars" style={{ display: 'flex', gap: '2px' }}>
+                  {[1, 2, 3, 4, 5].map((starIdx) => (
+                    <Star 
+                      key={starIdx} 
+                      size={15} 
+                      fill={starIdx <= Math.round(rating) ? "#FF9F0A" : "none"} 
+                      color={starIdx <= Math.round(rating) ? "#FF9F0A" : "var(--border)"}
+                      strokeWidth={1.5}
+                    />
+                  ))}
                 </div>
-                <strong style={{ fontSize: '1rem' }}>{rating.toFixed(1)}</strong>
-                <span className="rating-count">({reviewCount} verified buyer reviews)</span>
+                <strong style={{ fontSize: '0.95rem', color: 'var(--text)' }}>{rating.toFixed(1)}</strong>
+                <span className="rating-count">({reviewCount} verified reviews)</span>
               </>
             ) : (
-              <span className="rating-count">New Arrival &bull; Be the first to review</span>
+              <span className="rating-count">New Release &bull; Be the first to review</span>
             )}
           </div>
 
           {/* Price Box */}
-          <div style={{ background: 'var(--surface-raised)', padding: '1.5rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
+          <div style={{ background: 'var(--surface-raised)', padding: '1.25rem 1.5rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
             <div className="details-price-row">
-              <span className="details-price">
+              <span className="details-price" style={{ letterSpacing: '-0.02em' }}>
                 ₹{finalPrice.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
               {discount > 0 && (
@@ -196,44 +209,46 @@ export default function ProductDetails() {
                     ₹{originalPrice.toLocaleString('en-IN')}
                   </span>
                   <span className="discount-pill">
-                    -{Math.round(discount)}% OFF
+                    -{Math.round(discount)}%
                   </span>
                 </>
               )}
             </div>
             {discount > 0 && (
-              <p style={{ color: 'var(--good)', fontSize: '0.88rem', fontWeight: 700, marginTop: '6px' }}>
-                You save ₹{savings.toLocaleString('en-IN', { maximumFractionDigits: 0 })} with exclusive MarketHub pricing!
+              <p style={{ color: 'var(--good)', fontSize: '0.85rem', fontWeight: 600, marginTop: '4px' }}>
+                Save ₹{savings.toLocaleString('en-IN', { maximumFractionDigits: 0 })} with exclusive NexStock pricing
               </p>
             )}
-            <p style={{ fontSize: '0.8rem', color: 'var(--text-dim)', marginTop: '4px' }}>
-              Inclusive of all applicable taxes &bull; Free Shipping on this product
+            <p style={{ fontSize: '0.78rem', color: 'var(--text-dim)', marginTop: '4px' }}>
+              Inclusive of all taxes &bull; Complimentary regional shipping included
             </p>
           </div>
 
-          {/* Stock Availability */}
+          {/* Stock Availability with Apple micro-pulse */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <div className={`stock-status-pill ${isOutOfStock ? 'out-stock' : stock <= 10 ? 'low-stock' : 'in-stock'}`} style={{ margin: 0 }}>
               <span className="stock-dot"></span>
-              <span>{isOutOfStock ? 'Currently Out of Stock' : stock <= 10 ? `Hurry! Only ${stock} units left in stock` : `In Stock (${stock} units available)`}</span>
+              <span>{isOutOfStock ? 'Currently Out of Stock' : stock <= 10 ? `Only ${stock} units remaining in stock` : `In Stock (${stock} units available)`}</span>
             </div>
           </div>
 
           {/* Description */}
           {product.description && (
-            <p className="details-desc">{product.description}</p>
+            <p className="details-desc" style={{ color: 'var(--text-muted)', lineHeight: '1.6' }}>{product.description}</p>
           )}
 
           {/* Warehouse Stock Grid (if available) */}
           {product.stock && product.stock.length > 0 && (
             <div className="details-specs">
-              <h4>Regional Fulfillment Availability</h4>
+              <h4 style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Warehouse size={15} style={{ color: 'var(--primary)' }} /> Multi-Hub Fulfillment Availability
+              </h4>
               <div className="details-specs-grid">
                 {product.stock.map((w, idx) => (
                   <div key={idx} className="spec-item">
                     <span>{w.warehouse}</span>
                     <strong style={{ color: w.quantity > 0 ? 'var(--good)' : 'var(--text-dim)' }}>
-                      {w.quantity > 0 ? `${w.quantity} in hub` : 'Transfer required'}
+                      {w.quantity > 0 ? `${w.quantity} in hub` : 'Transit required'}
                     </strong>
                   </div>
                 ))}
@@ -242,22 +257,24 @@ export default function ProductDetails() {
           )}
 
           {/* Quantity & CTA buttons */}
-          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginTop: '1rem', flexWrap: 'wrap' }}>
-            <div className="cart-quantity-stepper">
+          <div style={{ display: 'flex', gap: '0.85rem', alignItems: 'center', marginTop: '1rem', flexWrap: 'wrap' }}>
+            <div className="cart-quantity-stepper" style={{ borderRadius: '9999px', background: 'var(--surface-raised)' }}>
               <button 
                 type="button" 
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
                 disabled={quantity <= 1 || isOutOfStock}
+                aria-label="Decrease quantity"
               >
-                -
+                <Minus size={13} />
               </button>
-              <span>{quantity}</span>
+              <span style={{ fontWeight: 600 }}>{quantity}</span>
               <button 
                 type="button" 
                 onClick={() => setQuantity(Math.min(stock, quantity + 1))}
                 disabled={quantity >= stock || isOutOfStock}
+                aria-label="Increase quantity"
               >
-                +
+                <Plus size={13} />
               </button>
             </div>
 
@@ -266,9 +283,15 @@ export default function ProductDetails() {
               className={`btn lg ${justAdded ? 'accent' : ''}`}
               onClick={handleAddToCart}
               disabled={isOutOfStock || isAdding}
-              style={{ flex: 1, minWidth: '180px' }}
+              style={{ flex: 1, minWidth: '170px' }}
             >
-              {justAdded ? '✓ Added to Cart!' : isAdding ? 'Adding...' : 'Add to Cart'}
+              {justAdded ? (
+                <><Check size={16} /><span>Added to Bag</span></>
+              ) : isAdding ? (
+                <span>Adding...</span>
+              ) : (
+                <><ShoppingBag size={16} /><span>Add to Bag</span></>
+              )}
             </button>
 
             <button 
@@ -276,9 +299,9 @@ export default function ProductDetails() {
               className="btn secondary lg"
               onClick={handleBuyNow}
               disabled={isOutOfStock}
-              style={{ flex: 1, minWidth: '150px' }}
+              style={{ flex: 1, minWidth: '140px' }}
             >
-              Buy Now
+              <span>Instant Checkout</span>
             </button>
           </div>
 
@@ -286,33 +309,34 @@ export default function ProductDetails() {
             <div style={{ 
               background: 'var(--good-soft)', 
               color: 'var(--good)', 
-              padding: '12px 16px', 
-              borderRadius: '8px', 
-              fontWeight: 600, 
+              padding: '10px 14px', 
+              borderRadius: 'var(--radius-sm)', 
+              fontWeight: 500, 
+              fontSize: '0.86rem',
               display: 'flex', 
               justifyContent: 'space-between',
               alignItems: 'center'
             }}>
-              <span>✓ Successfully added {quantity} item(s) to your shopping cart!</span>
-              <Link to="/cart" style={{ textDecoration: 'underline', color: 'inherit' }}>View Cart &rarr;</Link>
+              <span>Successfully added to your shopping bag!</span>
+              <Link to="/cart" style={{ textDecoration: 'underline', color: 'inherit', fontWeight: 600 }}>View Bag &rarr;</Link>
             </div>
           )}
         </div>
       </div>
 
       {/* Customer Reviews Section */}
-      <div className="panel">
+      <div className="panel" style={{ marginTop: '2.5rem' }}>
         <div className="section-header" style={{ marginBottom: '1.5rem' }}>
           <div>
-            <h3>Customer Feedback &amp; Reviews</h3>
+            <h3>Verified Customer Reviews</h3>
             <p style={{ color: 'var(--text-dim)', fontSize: '0.9rem' }}>
-              {reviewCount} verified review{reviewCount === 1 ? '' : 's'} with an average score of {rating.toFixed(1)}/5.0
+              {reviewCount} verified review{reviewCount === 1 ? '' : 's'} with average rating of {rating.toFixed(1)}/5.0
             </p>
           </div>
         </div>
 
         {product.reviews && product.reviews.length > 0 ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             {product.reviews.map((rev, idx) => (
               <div key={idx} style={{ 
                 background: 'var(--surface-raised)', 
@@ -322,19 +346,27 @@ export default function ProductDetails() {
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.85rem' }}>
-                      {(rev.customer_name || 'Buyer').charAt(0)}
+                    <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, fontSize: '0.85rem' }}>
+                      {(rev.customer_name || 'B').charAt(0)}
                     </div>
                     <div>
-                      <strong style={{ fontSize: '0.95rem' }}>{rev.customer_name || 'Verified Customer'}</strong>
-                      <span className="badge success" style={{ marginLeft: '8px', fontSize: '0.68rem' }}>Verified Purchase</span>
+                      <strong style={{ fontSize: '0.92rem' }}>{rev.customer_name || 'Verified Buyer'}</strong>
+                      <span className="badge success" style={{ marginLeft: '8px', fontSize: '0.65rem' }}>Verified Purchase</span>
                     </div>
                   </div>
-                  <div className="rating-stars">
-                    {'★'.repeat(rev.rating)}{'☆'.repeat(5 - rev.rating)}
+                  <div className="rating-stars" style={{ display: 'flex', gap: '2px' }}>
+                    {[1, 2, 3, 4, 5].map((starIdx) => (
+                      <Star 
+                        key={starIdx} 
+                        size={13} 
+                        fill={starIdx <= rev.rating ? "#FF9F0A" : "none"} 
+                        color={starIdx <= rev.rating ? "#FF9F0A" : "var(--border)"}
+                        strokeWidth={1.5}
+                      />
+                    ))}
                   </div>
                 </div>
-                <p style={{ color: 'var(--text)', fontSize: '0.95rem', lineHeight: 1.5 }}>
+                <p style={{ color: 'var(--text)', fontSize: '0.92rem', lineHeight: 1.5, margin: 0 }}>
                   "{rev.comment}"
                 </p>
               </div>
@@ -342,7 +374,7 @@ export default function ProductDetails() {
           </div>
         ) : (
           <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--text-dim)' }}>
-            <p>No customer reviews have been submitted for this item yet.</p>
+            <p>No customer reviews have been published for this item yet.</p>
           </div>
         )}
       </div>

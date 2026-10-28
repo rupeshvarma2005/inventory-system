@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '.env') });
 
 const pool = require('./db');
 const productsRouter = require('./routes/products');
@@ -12,7 +13,7 @@ const authRouter = require('./routes/auth');
 const suppliersRouter = require('./routes/suppliers');
 const purchasesRouter = require('./routes/purchases');
 const userRouter = require('./routes/user');
-const { authenticateToken } = require('./middleware/authMiddleware');
+const { authenticateToken, optionalAuth, requireRole } = require('./middleware/authMiddleware');
 
 const app = express();
 
@@ -43,16 +44,22 @@ app.use('/api/auth', authRouter);
 
 const cartRouter = require('./routes/cart');
 
-// Protected routes
-app.use('/api/products', authenticateToken, productsRouter);
-app.use('/api/warehouses', authenticateToken, warehousesRouter);
-app.use('/api/inventory', authenticateToken, inventoryRouter);
-app.use('/api/orders', authenticateToken, ordersRouter);
-app.use('/api/analytics', authenticateToken, analyticsRouter);
-app.use('/api/suppliers', authenticateToken, suppliersRouter);
-app.use('/api/purchases', authenticateToken, purchasesRouter);
+// 1. Storefront & Catalog Routes (Public browsing with optional authentication)
+app.use('/api/products', optionalAuth, productsRouter);
+app.use('/api/warehouses', optionalAuth, warehousesRouter);
+
+// 2. Customer & User Operations (Requires authenticated user, scoped by req.user.userId)
 app.use('/api/cart', authenticateToken, cartRouter);
 app.use('/api/user', authenticateToken, userRouter);
+app.use('/api/orders', authenticateToken, ordersRouter);
+
+// 3. Merchant & Enterprise Inventory Management (Restricted to Admin & Seller roles)
+app.use('/api/inventory', authenticateToken, requireRole(['admin', 'seller']), inventoryRouter);
+app.use('/api/analytics', authenticateToken, requireRole(['admin', 'seller']), analyticsRouter);
+
+// 4. Platform Administration Operations (Strictly restricted to Admin role)
+app.use('/api/suppliers', authenticateToken, requireRole(['admin']), suppliersRouter);
+app.use('/api/purchases', authenticateToken, requireRole(['admin']), purchasesRouter);
 
 // Centralized error handler
 app.use((err, req, res, next) => {

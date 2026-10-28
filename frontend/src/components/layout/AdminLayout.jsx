@@ -2,6 +2,11 @@ import { NavLink, Link } from 'react-router-dom';
 import { useContext } from 'react';
 import { AuthContext } from '../../context/AuthContext.jsx';
 import { ThemeContext } from '../../context/ThemeContext.jsx';
+import { 
+    LayoutDashboard, Package, Warehouse, ShoppingBag, 
+    Factory, ArrowDownToLine, Store, Layers, Sun, Moon, 
+    LogOut, SlidersHorizontal, ShieldCheck, User as UserIcon 
+} from 'lucide-react';
 
 export default function AdminLayout({ children }) {
     const { user, logout } = useContext(AuthContext);
@@ -11,62 +16,79 @@ export default function AdminLayout({ children }) {
         <div className="admin-layout">
             <aside className="sidebar">
                 <div className="brand">
-                    <div className="nav-brand-icon" style={{ width: '30px', height: '30px', borderRadius: '8px' }}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-                        </svg>
+                    <div className="nav-brand-icon" style={{ width: '28px', height: '28px', borderRadius: '7px' }}>
+                        <Layers size={16} strokeWidth={2.4} />
                     </div>
-                    <span>Market<span style={{ color: 'var(--primary)' }}>Hub</span></span>
-                    <span className="badge info" style={{ marginLeft: 'auto', fontSize: '0.65rem' }}>Admin</span>
+                    <span>Nex<span style={{ color: 'var(--primary)' }}>Stock</span></span>
+                    <span className="badge info" style={{ marginLeft: 'auto', fontSize: '0.65rem', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                        <ShieldCheck size={10} /> Admin
+                    </span>
                 </div>
                 
+                <div style={{ fontSize: '0.72rem', textTransform: 'uppercase', color: 'var(--text-dim)', fontWeight: 600, letterSpacing: '0.04em', margin: '8px 0 4px 8px' }}>
+                    Platform Operations
+                </div>
+
                 <NavLink to="/admin/dashboard" end className={({isActive}) => `nav-link ${isActive ? 'active' : ''}`}>
-                    <span>📊</span>
+                    <LayoutDashboard size={16} strokeWidth={2} />
                     <span>Executive Overview</span>
                 </NavLink>
                 <NavLink to="/admin/products" className={({isActive}) => `nav-link ${isActive ? 'active' : ''}`}>
-                    <span>🏷️</span>
+                    <Package size={16} strokeWidth={2} />
                     <span>All Products</span>
                 </NavLink>
                 <NavLink to="/admin/inventory" className={({isActive}) => `nav-link ${isActive ? 'active' : ''}`}>
-                    <span>📦</span>
+                    <Warehouse size={16} strokeWidth={2} />
                     <span>Multi-Hub Stock</span>
                 </NavLink>
                 <NavLink to="/admin/orders" className={({isActive}) => `nav-link ${isActive ? 'active' : ''}`}>
-                    <span>📋</span>
+                    <ShoppingBag size={16} strokeWidth={2} />
                     <span>Master Orders</span>
                 </NavLink>
                 <NavLink to="/admin/suppliers" className={({isActive}) => `nav-link ${isActive ? 'active' : ''}`}>
-                    <span>🏭</span>
+                    <Factory size={16} strokeWidth={2} />
                     <span>Suppliers Ledger</span>
                 </NavLink>
                 <NavLink to="/admin/purchases" className={({isActive}) => `nav-link ${isActive ? 'active' : ''}`}>
-                    <span>📥</span>
+                    <ArrowDownToLine size={16} strokeWidth={2} />
                     <span>Purchase Orders</span>
                 </NavLink>
                 
-                <div style={{ borderTop: '1px solid var(--border)', marginTop: '16px', paddingTop: '12px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <Link to="/" className="nav-link" style={{ fontSize: '0.85rem' }}>
-                        <span>🛍️</span>
+                <div style={{ borderTop: '1px solid var(--border-subtle)', marginTop: '16px', paddingTop: '12px', display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                    <div style={{ fontSize: '0.72rem', textTransform: 'uppercase', color: 'var(--text-dim)', fontWeight: 600, letterSpacing: '0.04em', margin: '4px 0 4px 8px' }}>
+                        Quick Navigation
+                    </div>
+                    <Link to="/" className="nav-link" style={{ fontSize: '0.86rem' }}>
+                        <Store size={15} />
                         <span>Customer Storefront</span>
                     </Link>
-                    <Link to="/seller/dashboard" className="nav-link" style={{ fontSize: '0.85rem' }}>
-                        <span>📦</span>
+                    <Link to="/seller/dashboard" className="nav-link" style={{ fontSize: '0.86rem' }}>
+                        <SlidersHorizontal size={15} />
                         <span>Seller Workspace</span>
                     </Link>
                 </div>
                 
-                <div style={{ marginTop: 'auto', paddingTop: '1.5rem', borderTop: '1px solid var(--border)' }}>
-                    <button className="btn secondary sm" onClick={toggleTheme} style={{ width: '100%', marginBottom: '10px' }}>
-                        {theme === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode'}
+                <div style={{ marginTop: 'auto', paddingTop: '1.25rem', borderTop: '1px solid var(--border-subtle)' }}>
+                    <button 
+                        className="btn secondary sm" 
+                        onClick={toggleTheme} 
+                        style={{ width: '100%', marginBottom: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                    >
+                        {theme === 'dark' ? <><Sun size={14} /> Light Appearance</> : <><Moon size={14} /> Dark Appearance</>}
                     </button>
                     {user && (
-                        <div style={{ fontSize: '12px', color: 'var(--text-dim)', textAlign: 'center', marginBottom: '10px' }}>
-                            Administrator: <strong>{user.name || user.username}</strong>
+                        <div style={{ fontSize: '11px', color: 'var(--text-dim)', textAlign: 'center', marginBottom: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                            <UserIcon size={12} />
+                            <span>Signed in as <strong>{user.name || user.username}</strong></span>
                         </div>
                     )}
-                    <button className="btn outline sm" onClick={logout} style={{ width: '100%', color: 'var(--danger)', borderColor: 'var(--danger-soft)' }}>
-                        Sign Out
+                    <button 
+                        className="btn outline sm" 
+                        onClick={logout} 
+                        style={{ width: '100%', color: 'var(--danger)', borderColor: 'var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                    >
+                        <LogOut size={13} />
+                        <span>Sign Out</span>
                     </button>
                 </div>
             </aside>
